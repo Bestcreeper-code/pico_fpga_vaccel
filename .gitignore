@@ -1,0 +1,6 @@
+fpga/impl
+pico/build
+pico/compile_commands.json
+*.gprj.user
+*.cache
+*.vscode

@@ -1,0 +1,19 @@
+.program duplex_sync
+.side_set 2
+
+.wrap_target
+
+    pull            side 0b10
+
+    set x, 6        side 0b00
+
+    out pins, 2     side 0b01
+    nop             side 0b00
+
+loop:
+    out pins, 2     side 0b01
+    nop             side 0b00
+
+    jmp x-- loop    side 0b00
+
+.wrap
