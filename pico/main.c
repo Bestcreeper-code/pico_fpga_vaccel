@@ -4,19 +4,12 @@
 #include "pico/time.h"
 #include "hardware/pio.h"
 #include "build/qspi_dma.pio.h"
-#include "video.h"
+#include "serial_data/serial.h"
 #include <hardware/gpio.h>
 #include <hardware/timer.h>
 #include <pico/types.h>
 #include <stdint.h>
 #include <stdio.h>
-
-
-
-
-inline void put_pix(int x, int y, c565_t color) {
-    dma_framebuffer[x+y*32] = color;
-}
 
 
 
@@ -35,13 +28,7 @@ int main()
     sleep_ms(2000);
 
     printf("Starting...\n");
-    video_init();
-
-    sleep_ms(1000);
-    link_debug_dump();
-    sleep_ms(1000);
-    link_debug_dump();
-
+    serial_init();
     while (true) {
 
         char chr = getchar_timeout_us(10);
