@@ -9,7 +9,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
-add_executable(pico_vaccel main.c video.c)
+add_executable(pico_vaccel 
+    main.cpp
+    serial_data/serial.c    
+)
 
 pico_enable_stdio_uart(pico_vaccel 1)
 pico_enable_stdio_usb(pico_vaccel 1)

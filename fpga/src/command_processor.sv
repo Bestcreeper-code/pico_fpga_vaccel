@@ -1,3 +1,4 @@
+/*
 module command_processor (
     input  logic        pix_clk,
     input  logic        rst_n,
@@ -35,3 +36,5 @@ basic_16b_semidpb your_instance_name(
         .din(din),
         .adb(adb)
     );
+endmodule
+*/

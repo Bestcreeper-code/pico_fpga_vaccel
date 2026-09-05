@@ -1,30 +1,150 @@
 module top_module
 (
+    //board lines
     input        I_clk,          // 27MHz board clock
     input        I_rst,
-    input        dma_soft_rst,
+    // dvi
     output       O_tmds_clk_p,
     output       O_tmds_clk_n,
     output [2:0] O_tmds_data_p,
     output [2:0] O_tmds_data_n,
+ 
+    //serial interface
+    input        serial_dat_clk,//I_dma_clk,
+    input        serial_dat_dir,//I_dma_word_sync,      // 1-tick: start of word
+    inout  [3:0] serial_dat_bus,
 
-    // framebuffer DMA / duplex serial interface
-    input        I_dma_clk,
-    input        I_dma_word_sync,      // 1-tick: start of word
-    input  [1:0] tx_in,
-    output [1:0] rx_out,
+    output        serial_dat_irq,
+    input         serial_dat_rst,
+    
+    //leds for debug etc
+    output [5:0]      _leds,
 
-    output [1:0]      leds
-    //output       led1
-    //output       led2
-    //output       led3
+    //sdram interface
+    output O_sdram_clk,
+    output O_sdram_cke,
+    output O_sdram_cs_n,
+    output O_sdram_cas_n,
+    output O_sdram_ras_n,
+    output O_sdram_wen_n,
+    inout [31:0] IO_sdram_dq,
+    output [10:0] O_sdram_addr,
+    output [1:0] O_sdram_ba,
+    output [3:0] O_sdram_dqm
 
 );
+    wire [5:0] leds;
+    assign _leds = ~leds;
 
     wire I_rst_n = ~I_rst;
 
-    //DVI clocking 
+    
 
+    // rgb
+    wire [7:0] con_r;
+    wire [7:0] con_g;
+    wire [7:0] con_b;
+
+    
+
+
+
+
+
+
+
+
+    // serial interface
+    logic serial_word_clk;
+    logic [31:0] serial_rx_out;
+    logic [31:0] serial_tx_in;
+    
+    qserial_interface #(
+        .WORD_BITS (32)
+    ) qserial_interface (
+        .rst          (serial_dat_rst),
+
+        .clk_in (serial_dat_clk),
+        .is_rx (serial_dat_dir),
+        .serial_data_bus (serial_dat_bus),
+         
+        
+        .new_word     (serial_word_clk),
+        .rx_word      (serial_rx_out),
+        .tx_word      (serial_tx_in)
+    );
+
+    //debug
+    assign con_g = {serial_rx_out[6], 7'b0000000};
+
+
+    // command processor
+    Command_Processor #(
+        .WORD_BITS (32)
+    ) cmd_proc (
+        
+        .sys_clk  (I_clk),
+
+        // data flow
+        .new_word_present (serial_word_clk),
+        .rx_data  (serial_rx_out),
+        .tx_data  (serial_tx_in),
+
+        // misc
+        .irq      (serial_dat_irq),
+        .leds     (leds)
+    );
+
+
+
+
+
+    // sdram controller
+/*
+    SDRAM_Controller_HS your_instance_name(
+		.O_sdram_clk(O_sdram_clk),
+		.O_sdram_cke(O_sdram_cke),
+		.O_sdram_cs_n(O_sdram_cs_n),
+		.O_sdram_cas_n(O_sdram_cas_n),
+		.O_sdram_ras_n(O_sdram_ras_n),
+		.O_sdram_wen_n(O_sdram_wen_n),
+		.O_sdram_dqm(O_sdram_dqm),
+		.O_sdram_addr(O_sdram_addr),
+		.O_sdram_ba(O_sdram_ba),
+		.IO_sdram_dq(IO_sdram_dq),
+
+
+		.I_sdrc_rst_n(I_rst_n),
+		.I_sdrc_clk(I_sdrc_clk),
+		.I_sdram_clk(I_sdram_clk),
+		.I_sdrc_cmd_en(I_sdrc_cmd_en),
+		.I_sdrc_cmd(I_sdrc_cmd),
+		.I_sdrc_precharge_ctrl(I_sdrc_precharge_ctrl),
+		.I_sdram_power_down(I_sdram_power_down),
+		.I_sdram_selfrefresh(I_sdram_selfrefresh),
+		.I_sdrc_addr(I_sdrc_addr),
+		.I_sdrc_dqm(I_sdrc_dqm),
+		.I_sdrc_data(I_sdrc_data),
+		.I_sdrc_data_len(I_sdrc_data_len),
+		.O_sdrc_data(O_sdrc_data),
+		.O_sdrc_init_done(O_sdrc_init_done),
+		.O_sdrc_cmd_ack(O_sdrc_cmd_ack)
+	);
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //DVI clocking 
     wire serial_clk;
     wire pix_clk;
     wire pll_lock;
@@ -78,59 +198,16 @@ module top_module
     );
 
 
-    // framebuffer
-
-    localparam int FB_W   = 32;
-    localparam int FB_H   = 30;
-    localparam int ADDR_W = 10;
-
-
-    wire [7:0] con_r;
-    wire [7:0] con_g;
-    wire [7:0] con_b;
 
 
     
-    // Framebuffer DMA writer
-
-    localparam int DMA_ADDRESS_BUS_SIZE = ADDR_W + 1;   
-
-    logic dma_we;
-    logic [15:0] dma_data_bus_out;
-    logic [DMA_ADDRESS_BUS_SIZE-1:0] dma_addr_bus;
-    logic dma_data_bus_clk;
-
-    
-    
-
-
-    serial_stream_dma_interface #(
-        .WORD_BITS        (16),
-        .ADDRESS_BUS_SIZE (DMA_ADDRESS_BUS_SIZE)
-    ) u_fb_dma (
-        .clk_in       (I_dma_clk),
-        .sync_in      (I_dma_word_sync),
-        .rst          (dma_soft_rst),
-
-        .tx_in        (tx_in),
-        .rx_out       (rx_out),
-        .rx_tx_word   (16'h0000), //TODO: wire it to some logic
-
-        .leds (leds),
-
-        .data_bus_clk (dma_data_bus_clk),
-        .we           (dma_we),
-        .data_bus_out (dma_data_bus_out),
-        .addr_bus     (dma_addr_bus)
-    );
-
-
+/*
     framebuffer u_framebuffer (
         .pix_clk   (pix_clk),
         .rst_n     (hdmi_rst_n),
 
         
-        .wr_clk    (dma_data_bus_clk),
+        .wr_clk    (serial_dat_bus),
         .wr_rst_n  (I_rst_n),
 
         // read port
@@ -146,6 +223,7 @@ module top_module
         .input_addr  (dma_addr_bus[DMA_ADDRESS_BUS_SIZE-1:0]),
         .input_wdata (dma_data_bus_out)
     );
+*/
 
 
     // framebuffer output pipeline

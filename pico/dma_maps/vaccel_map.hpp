@@ -1,9 +1,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <sys/cdefs.h>
+#include "helpers/big_end.hpp"
 
-typedef uint16_t color_t;
+
+typedef be_uint16_t color_t;
 
 // RO status registers space
 
@@ -28,18 +29,21 @@ typedef struct {
 } __attribute__((packed)) vaccel_status_regs;
 
 
-
+typedef enum  {
+    VACCEL_CMD_SET_STATUS_LED = 0xDB,
+} vaccel_opcodes;
 
 
 // commands
 typedef struct {
+    be_uint16_t command_length;
+    uint8_t args;
     uint8_t opcode;
-    uint16_t length;
 } __attribute__((packed)) vaccel_command_header;
 
 typedef struct {
     vaccel_command_header header;
-    uint16_t x,y;
-    uint16_t w,h;
+    be_uint16_t x,y;
+    be_uint16_t w,h;
     color_t color;
 } __attribute__((packed)) vaccel_command_draw_rect;
