@@ -7,13 +7,13 @@
 
 -mod_name framebuffer_sdpb
 -file_name framebuffer_sdpb
--path /home/bestcreeper/Code/FPGA/console/src/gowin_ip/
+-path /home/bestcreeper/Code/pico_fpga_vaccel/fpga/src/framebuffer_sdpb/
 -type RAM_SDP
 -file_type vlg
 -bram_b true
--depth_0 10
--depth_1 10
--width_0 16
+-depth_0 512
+-depth_1 1024
+-width_0 32
 -width_1 16
--read_mode pipeline
+-read_mode bypass
 -reset_mode sync

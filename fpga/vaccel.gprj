@@ -9,7 +9,8 @@
         <File path="src/Command_processor.sv" type="file.verilog" enable="1"/>
         <File path="src/dvi_tx/dvi_tx.v" type="file.verilog" enable="1"/>
         <File path="src/framebuffer.sv" type="file.verilog" enable="1"/>
-        <File path="src/gowin_ip/framebuffer_sdpb.v" type="file.verilog" enable="1"/>
+        <File path="src/framebuffer_sdpb/framebuffer_sdpb.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_dpb16k_565/dpbram_16k_565.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/TMDS_rPLL.v" type="file.verilog" enable="1"/>
         <File path="src/key_led_ctrl.v" type="file.verilog" enable="1"/>
         <File path="src/qserial_interface.sv" type="file.verilog" enable="1"/>

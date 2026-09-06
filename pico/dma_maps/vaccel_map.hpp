@@ -31,6 +31,8 @@ typedef struct {
 
 typedef enum  {
     VACCEL_CMD_SET_STATUS_LED = 0xDB,
+    VACCEL_CMD_WRITE_LOHALF_BYTEADDR_DBUS = 0xF0,
+    VACCEL_CMD_READ_LOHALF_BYTEADDR_DBUS = 0xF1
 } vaccel_opcodes;
 
 
