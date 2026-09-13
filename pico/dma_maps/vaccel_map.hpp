@@ -36,6 +36,15 @@ typedef enum  {
 } vaccel_opcodes;
 
 
+// // commands
+// typedef struct {
+//     uint8_t arg3;
+//     uint8_t arg2;
+//     uint8_t arg1;
+//     uint8_t opcode;
+// } __attribute__((packed)) vaccel_command_header;
+
+
 // commands
 typedef struct {
     be_uint16_t command_length;

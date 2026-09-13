@@ -10,6 +10,8 @@ static char serial_clk_pin = -1;
 static char serial_dir_pin = -1;
 static char serial_rst_pin = -1;
 
+static bool pins_dir_out = 1;
+
 int serial_init(char* data_pins, char clk_pin, char dir_pin, char rst_pin, uint8_t pin_amount) {
     assert(data_pins != NULL);
     assert(pin_amount > 0);
@@ -60,6 +62,12 @@ int serial_write_word(uint32_t word) {
 }
 
 uint32_t serial_read_word() {
+    if (pins_dir_out) {
+        for(int i = 0; i < serial_pin_amount; i++) {
+            gpio_set_dir(serial_pins[i], GPIO_IN);
+        }
+    }
+
     gpio_put(serial_dir_pin, 0); // tx mode on FPGA
     uint32_t word = 0;
 

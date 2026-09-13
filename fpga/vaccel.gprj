@@ -7,6 +7,7 @@
     <FileList>
         <File path="src/16b_sdpb/basic_16b_semidpb.v" type="file.verilog" enable="1"/>
         <File path="src/Command_processor.sv" type="file.verilog" enable="1"/>
+        <File path="src/bram_512_32b_fifo/bram_512_32b_fifo.v" type="file.verilog" enable="1"/>
         <File path="src/dvi_tx/dvi_tx.v" type="file.verilog" enable="1"/>
         <File path="src/framebuffer.sv" type="file.verilog" enable="1"/>
         <File path="src/framebuffer_sdpb/framebuffer_sdpb.v" type="file.verilog" enable="1"/>

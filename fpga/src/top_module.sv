@@ -103,10 +103,10 @@ module top_module
     ) cmd_proc (
         
         .sys_clk  (sys_clk),
-        .rst_n(I_rst_n),
+        .rst_n (I_rst_n),
 
         // data flow
-        .new_word_present (serial_word_clk),
+        .new_word_present_clk (serial_word_clk),
         .rx_data  (serial_rx_out),
         .tx_data  (serial_tx_in),
 

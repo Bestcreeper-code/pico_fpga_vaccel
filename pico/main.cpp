@@ -65,7 +65,7 @@ int main() {
 			const int WIDTH = 16;
 			const int HEIGHT = 16;
 			uint16_t color = 0xFFFF;
-		
+			
 			// Paddle height scaled for 16x16 grid
 			const int paddle_h = 3;
 			int paddle1_y = HEIGHT / 2 - paddle_h / 2;
@@ -165,6 +165,55 @@ int main() {
 			}
 		
 		exit_pong:;
+		} else if (c == 'd') {
+			// Fill a 32x30 framebuffer with a positional color gradient.
+			// Screen = 32 wide x 30 tall = 960 pixels. Each 32-bit write carries
+			// 2 packed 16-bit pixels, so there are (32*30)/2 = 480 addresses.
+			#define FB_WIDTH  32
+			#define FB_HEIGHT 30
+		
+			printf("Filling %dx%d framebuffer gradient...\n", FB_WIDTH, FB_HEIGHT);
+		
+			for (int addr = 0; addr < (FB_WIDTH * FB_HEIGHT) / 2; addr++) {
+				uint16_t packed[2];
+		
+				for (int half = 0; half < 2; half++) {
+					int pixel_index = addr * 2 + half;
+					int x = pixel_index % FB_WIDTH;
+					int y = pixel_index / FB_WIDTH;
+		
+					uint16_t r = (uint16_t)(x * 32 / FB_WIDTH);         // 5-bit: 0..31
+					uint16_t g = (uint16_t)(32 - (x * 32 / FB_WIDTH));  // 5-bit: 0..32 -> clamp
+					uint16_t b = (uint16_t)(y * 64 / FB_HEIGHT);        // 6-bit: 0..63
+		
+					if (r > 31) r = 31;
+					if (g > 31) g = 31;
+					if (b > 63) b = 63;
+		
+					// 16-bit pixel layout: [15:11]=R(5) [10:6]=G(5) [5:0]=B(6)
+					packed[half] = (uint16_t)((r << 11) | (g << 6) | b);
+				}
+		
+				uint32_t data_word = ((uint32_t)packed[1] << 16) | packed[0];
+		
+				// Address is split across the header: args = bits [23:16],
+				// command_length = bits [15:0], matching {args, length} in the SM.
+				vaccel_command_header cmd = {
+					.command_length = (uint16_t)(addr & 0xFFFF),
+					.args = (uint8_t)((addr >> 16) & 0xFF),
+					.opcode = VACCEL_CMD_WRITE_LOHALF_BYTEADDR_DBUS
+				};
+		
+				// 1. Header carries the address.
+				serial_write_word(*(uint32_t*)&cmd);
+				// 2. SM then pops this word from the FIFO as the write data.
+				serial_write_word(data_word);
+			}
+		
+			printf("Framebuffer fill complete.\n");
+		
+			#undef FB_WIDTH
+			#undef FB_HEIGHT
 		}
 
 	}
